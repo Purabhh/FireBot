@@ -1,6 +1,3 @@
-# Batch experiments for CS 440 Project 1. Every bot plays the identical setup
-# within a trial, and every setup is seeded from BASE_SEED, so reruns match.
-
 import csv
 import hashlib
 import random
@@ -10,14 +7,14 @@ from collections import deque
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))   # so "helpers" imports work however this is run
+sys.path.insert(0, str(ROOT))
 
 from helpers.ship import generate_ship, neighbors, open_cells
 from helpers.bots import ALL_BOTS, BOTS_BY_NAME
 from scripts.run_once import run_game
 
 D = 40
-Q_VALUES = [round(0.05 * i, 2) for i in range(21)]     # 0.00 .. 1.00
+Q_VALUES = [round(0.05 * i, 2) for i in range(21)]
 TRIALS_PER_Q = 200
 OUT_CSV = ROOT / "results" / "results.csv"
 BASE_SEED = 440
@@ -28,14 +25,11 @@ CSV_FIELDS = [
 ]
 
 
-# A stable 64-bit seed for one trial. SHA-256 rather than hash(), whose string
-# hashing is randomized per run and would break reproducibility.
 def trial_seed(base_seed, q, trial):
     key = "%d|%.6f|%d" % (base_seed, q, trial)
     return int.from_bytes(hashlib.sha256(key.encode()).digest()[:8], "big")
 
 
-# BFS distance on the empty ship at t=0, ignoring fire. -1 if unreachable.
 def grid_distance(ship, start, goal):
     size = len(ship)
     if start == goal:
@@ -54,7 +48,6 @@ def grid_distance(ship, start, goal):
     return -1
 
 
-# Build one setup and run every bot on it; returns a list of CSV rows.
 def run_trial(d, q, trial_id, seed, bot_names):
     rng = random.Random(seed)
     ship = generate_ship(d, rng)
@@ -70,7 +63,7 @@ def run_trial(d, q, trial_id, seed, bot_names):
         try:
             result = run_game(ship, BOTS_BY_NAME[name], q, placement, fire_seed)
         except NotImplementedError:
-            continue       # bot not designed yet
+            continue
         rows.append({
             "trial_id": trial_id,
             "D": d,
@@ -86,7 +79,6 @@ def run_trial(d, q, trial_id, seed, bot_names):
     return rows
 
 
-# True unless next_move raises NotImplementedError on a throwaway ship.
 def bot_is_implemented(bot_class, probe_d=10):
     ship = generate_ship(probe_d, random.Random(0))
     cells = open_cells(ship)
@@ -97,7 +89,6 @@ def bot_is_implemented(bot_class, probe_d=10):
     return True
 
 
-# Success rate per bot for one q value's worth of rows.
 def summarize(rows):
     totals = {}
     for row in rows:
@@ -106,7 +97,6 @@ def summarize(rows):
     return {bot: wins / n for bot, (wins, n) in sorted(totals.items())}
 
 
-# Run the whole sweep and write out_csv.
 def run_experiments(D, q_values, trials_per_q, bots, out_csv, base_seed):
     bot_names = []
     for bot_class in bots:
@@ -156,3 +146,4 @@ if __name__ == "__main__":
         out_csv=OUT_CSV,
         base_seed=BASE_SEED,
     )
+

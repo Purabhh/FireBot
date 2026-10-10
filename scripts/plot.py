@@ -1,6 +1,3 @@
-# Plots the results CSV from experiments.py. Only reads the CSV, never runs the
-# simulation.
-
 import csv
 from pathlib import Path
 
@@ -11,13 +8,11 @@ IN_CSV = ROOT / "results" / "results.csv"
 OUT_PNG = ROOT / "results" / "success_vs_q.png"
 
 
-# Read every row of the CSV as a dict.
 def read_rows(path):
     with open(path, newline="") as f:
         return list(csv.DictReader(f))
 
 
-# Success rate per bot per q, as {bot: {q: rate}}.
 def success_rates(rows):
     wins = {}
     games = {}
@@ -43,17 +38,18 @@ def main():
     for bot in sorted(rates):
         qs = sorted(rates[bot])
         ys = [rates[bot][q] for q in qs]
-        plt.plot(qs, ys, marker="o", label=bot)   # one line per bot
+        plt.plot(qs, ys, marker="o", label=bot)
 
-    plt.xlabel("q (flammability)")                        # label the x-axis
-    plt.ylabel("Success rate")                            # label the y-axis
-    plt.title("Bot success rate vs flammability (D=%s)" % D)   # title on top
-    plt.ylim(0, 1)                                        # a rate is 0 to 1
-    plt.legend()                                          # box naming each line
-    plt.savefig(OUT_PNG)                                  # save the figure
+    plt.xlabel("q (flammability)")
+    plt.ylabel("Success rate")
+    plt.title("Bot success rate vs flammability (D=%s)" % D)
+    plt.ylim(0, 1)
+    plt.legend()
+    plt.savefig(OUT_PNG)
     print("saved %s" % OUT_PNG)
-    plt.show()                                            # open a window
+    plt.show()
 
 
 if __name__ == "__main__":
     main()
+
